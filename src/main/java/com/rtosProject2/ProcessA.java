@@ -17,6 +17,9 @@ public class ProcessA extends ProcessBase {
     private final DoubleBuffer<Message> _buffer;
     private final Display _display;
     private final ExecutorService pool = Executors.newFixedThreadPool(4);
+    private final int maxConsecutiveHalts = 2;
+    private int consecutiveHalts = 0;
+    private Plane.Movement lastHalted = Plane.Movement.NotSet;
 
     /**
      * Constructor that accepts the motion delay (0 for single step mode),
@@ -47,10 +50,8 @@ public class ProcessA extends ProcessBase {
         int totalPlanes =  _display.GetPlanes().size();
 
         //position of all trains is held in the display instance (grid view)
-        String[][][] currentState = _display.GetCurrentState();
-        Positions positions = new Positions(currentState);
-        preventCollision(positions);
-        _buffer.push(new Message<>(Message.PayloadType.Position, positions));
+        preventCollision(new Positions(_display.GetPlanes()));
+        _buffer.push(new Message<>(Message.PayloadType.Position, new Positions(_display.GetPlanes())));
 
         //continue moving trains for _display.seconds
         while (counter < _display.Seconds) {
@@ -65,12 +66,12 @@ public class ProcessA extends ProcessBase {
                 //if delay is 0, then single step
                 _display.AwaitKeypress();
             }
-            counter++;
+             counter++;
 
             //move each train in the array, update the display
             //and update current state
             for (int i = 0; i < totalPlanes; i++) {
-                currentState[i] = _display.GetPlanes().get(i).MoveOne();
+                _display.GetPlanes().get(i).Move();
             }
             try {
                 _display.Refresh();
@@ -83,9 +84,8 @@ public class ProcessA extends ProcessBase {
             Plane.haltZ = false;
 
             //push the current state of all planes to bufferAB.
-            positions = new Positions(currentState);
-            preventCollision(positions);
-            _buffer.push(new Message<>(Message.PayloadType.Position, positions));
+            preventCollision(new Positions(_display.GetPlanes()));
+            _buffer.push(new Message<>(Message.PayloadType.Position, new Positions(_display.GetPlanes())));
 
             //check for messages shuttled from C
             CheckForMessagesFromC();
@@ -120,39 +120,84 @@ public class ProcessA extends ProcessBase {
         return false;
     }
 
+    /**
+     * This process uses the Collision Management class to create sub threads of the process
+     * High level the algorithm will take a base line of all the trains moving
+     * If their is no collision, then nothing to do, the other threads are cancelled.
+     *
+     * If there is a collision each thread returns a distance.
+     * Some comparisons are made to see which train to halt based on which distance was greatest
+     *
+     * Low level:  The class uses the callable class and registers a future.  This allows for non-blocking
+     * code and allows the program to execute.  The only blocking code is when the results are needed before the program
+     * can proceed.
+     *
+     * The Class uses a thread pool and returns system resources when not used.
+     **/
     private void preventCollision(Positions positions) {
+
         try {
-            int offset = 2;  // difference from communication
-            int look_ahead = Plane.rows + offset;
 
-            Callable<Integer> base_line = new CollisionManagement(positions, -1, look_ahead);
-            Callable<Integer> callable_x = new CollisionManagement(positions, 0, look_ahead);
-            Callable<Integer> callable_y = new CollisionManagement(positions, 1, look_ahead);
-            Callable<Integer> callable_z = new CollisionManagement(positions, 2, look_ahead);
+            // How far we want to look ahead
+            int look_ahead = Plane.rows;
 
+            // Uses four instances of the callable class
+            Callable<Integer> base_line = new CollisionManagement(positions, Plane.Movement.All, look_ahead);
+            Callable<Integer> callable_x = new CollisionManagement(positions, Plane.Movement.X, look_ahead);
+            Callable<Integer> callable_y = new CollisionManagement(positions, Plane.Movement.Y, look_ahead);
+            Callable<Integer> callable_z = new CollisionManagement(positions, Plane.Movement.Z, look_ahead);
+
+            // This is a java thing...  Future is non-blocking
             Future<Integer> future_baseline = pool.submit(base_line);
             Future<Integer> future_halt_x = pool.submit(callable_x);
             Future<Integer> future_halt_y = pool.submit(callable_y);
             Future<Integer> future_halt_z = pool.submit(callable_z);
 
+            // If baseline is desired, cancel other thread
             final int collision = future_baseline.get();
             if (collision >= look_ahead) {
                 future_halt_x.cancel(true);
                 future_halt_y.cancel(true);
                 future_halt_z.cancel(true);
-            } else {
+            }
+
+            // Else:  calculate which one to use
+            else {
                 final int halt_x = future_halt_x.get();
                 final int halt_y = future_halt_y.get();
                 final int halt_z = future_halt_z.get();
 
-                if (halt_x > collision && halt_x >= halt_y && halt_x >= halt_z)
-                    Plane.haltX = true;
-                if (halt_y > collision && halt_y > halt_x && halt_y >= halt_z) {
-                    Plane.haltY = true;
-                    System.out.println("C halts Y");
+                if (halt_x > collision && halt_x >= halt_y && halt_x >= halt_z) {
+                    if (lastHalted == Plane.Movement.X) {
+                        consecutiveHalts++;
+                    } else {
+                        consecutiveHalts = 0;
+                        lastHalted = Plane.Movement.X;
+                    }
+                    Plane.haltX = consecutiveHalts < maxConsecutiveHalts;
                 }
-                if (halt_z > collision && halt_z > halt_x && halt_z > halt_y)
-                    Plane.haltZ = true;
+                if (halt_y > collision && halt_y > halt_x && halt_y >= halt_z) {
+                    if (lastHalted == Plane.Movement.Y) {
+                        consecutiveHalts++;
+                    } else {
+                        consecutiveHalts = 0;
+                        lastHalted = Plane.Movement.Y;
+                    }
+                    Plane.haltY = consecutiveHalts < maxConsecutiveHalts;;
+                }
+               if (halt_z > collision && halt_z > halt_x && halt_z > halt_y) {
+                    if (lastHalted == Plane.Movement.Z) {
+                        consecutiveHalts++;
+                    } else {
+                        consecutiveHalts = 0;
+                        lastHalted = Plane.Movement.Z;
+                    }
+                    Plane.haltZ = consecutiveHalts < maxConsecutiveHalts;
+                }
+            }
+            if (consecutiveHalts >= maxConsecutiveHalts) {
+                lastHalted = Plane.Movement.NotSet;
+                consecutiveHalts = 0;
             }
         } catch (Exception e) {
             e.printStackTrace();

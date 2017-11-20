@@ -26,24 +26,25 @@ public class Plane {
 
     /**
      * Enum used to tell the plane which movement operation to perform. For example,
-     * Movement.X goes diagonal when called by MoveOne()
+     * Movement.X goes diagonal when called by Move()
      */
     public enum Movement {
+        NotSet,
+        All,
         X,
         Y,
         Z,
-        Set,
-        Random
+        Set
     }
 
     /**
      * Constructor to initialize a new plane
      * @param marker X, Y, or Z
-     * @param movement Movement.X, Movement.Y, etc.
+     * @param mover Handles moving
      * @param labels The array of numbers on the outside and dots inside the plane
      */
-    public Plane(String marker, Movement movement,  Label[][] labels) {
-        _movement = movement;
+    public Plane(String marker, Mover mover,  Label[][] labels) {
+        _mover = mover;
         _marker = marker;
         _labels = labels;
     }
@@ -52,15 +53,15 @@ public class Plane {
     private final Label[][] _labels;
     private int _atRow = -1;
     private int _atCol = -1;
-    private final Movement _movement;
+    private final Mover _mover;
 
     /**
      * Shows the marker at its XY position in a non-collision state
      * @param x
      * @param y
      */
-    public void Initialize(int x, int y) {
-        ShowMarker(x, y, false);
+    public void Initialize() {
+        ShowMarker(_mover.getRowPos(), _mover.getColPos(), false);
     }
 
     /**
@@ -108,11 +109,9 @@ public class Plane {
      * described in the homework assignment. X = diagonal, Y is veritcal, Z is horizontal
      * @return
      */
-    public String[][] MoveOne() {
+    public void Move() {
 
-        int newRow;
-        int newCol;
-        switch (_movement) {
+        switch (_mover.getMovement()) {
             case X:
                 if(haltX){
                     System.out.println("halt x");
@@ -120,45 +119,32 @@ public class Plane {
 
                 }
                 else {
-                    newRow = (_atRow + 1) % rows;
-                    newCol = (_atCol + 1) % cols;
-                    ShowMarker(newRow, newCol, false);
+                    _mover.move();
+                    ShowMarker(_mover.getRowPos(), _mover.getColPos(), false);
                 }
-
                 break;
             case Y:
-                if (!haltY && _atRow + 1 == 2)
-                    System.out.println("Y is at 2");
                 if (haltY){
-
                     ShowMarker(_atRow, _atCol, false);
                 }
                 else {
-                    newRow = (_atRow + 1) % rows;
-                    newCol = 2;
-                    ShowMarker(newRow, newCol, false);
+                    _mover.move();
+                    ShowMarker(_mover.getRowPos(), _mover.getColPos(), false);
                 }
-
                 break;
             case Z:
                 if(haltZ){
                     System.out.println("halt z");
                     ShowMarker(_atRow, _atCol, false);
-
                 }
                 else {
-                    newRow = 3;
-                    newCol = (_atCol + 1) % cols;
-                    ShowMarker(newRow, newCol, false);
+                    _mover.move();
+                    ShowMarker(_mover.getRowPos(), _mover.getColPos(), false);
                 }
-
                 break;
             case Set:
                 break;
-            case Random:
-                break;
         }
-        return GetState();
     }
 
     /**
@@ -168,6 +154,7 @@ public class Plane {
      * @return
      */
     private Label GetLabelInPlane(int row, int col) {
+        System.out.println(row + " --- " + col);
         return _labels[row + 1][col + 1];
     }
 
@@ -181,6 +168,10 @@ public class Plane {
     public void ShowMarker(int row, int col, boolean isCollision) {
 
         ShowMarker(row, col, isCollision, "");
+    }
+
+    public Mover GetMoverClone() {
+        return _mover.clone();
     }
 
     /**
@@ -213,6 +204,14 @@ public class Plane {
     }
 
     /**
+     * Returns the standard marker for this plane. Use GetMarker(row,col) to get the current marking at a specific pos
+     * @return
+     */
+    public String GetMarker() {
+        return _marker;
+    }
+
+    /**
      * Arbitrarily shows a marker in normal or collision state at a row column.
      * Used by ProcessC to show all trains one plane and possibly more than one
      * train in a single row/col position (thus, marker is a string).
@@ -225,27 +224,13 @@ public class Plane {
         Label label = GetLabelInPlane(row, col);
         marker = String.format(labelFormat, marker.equals("") ? _marker : marker);
         marker = marker.length() > labelFormat.length() ? marker.trim() : marker;
-        label.setText(marker);
-        SetOccupiedFormat(label, isCollision);
-        if (_movement != Movement.Set && _movement != Movement.Random) {
+        if (_mover != null && _mover.getMovement() != Movement.Set) {
             SetEmptyFormat(_atRow, _atCol);
             _atRow = row;
             _atCol = col;
         }
+        label.setText(marker);
+        SetOccupiedFormat(label, isCollision);
     }
 
-    /**
-     * Gets the state of a plane. Returns a 2d string plane.
-     * The marker appears in the plane as a character. Empty is represented by ""
-     * @return
-     */
-    public String[][] GetState() {
-        String[][] result = new String[rows][cols];
-        for (int col = 0; col < cols; col++) {
-            for (int row = 0; row < rows; row++) {
-                result[row][col] = (col == _atCol && row == _atRow) ? _marker : "";
-            }
-        }
-        return result;
-    }
 }

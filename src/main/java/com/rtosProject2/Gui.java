@@ -1,6 +1,7 @@
 package com.rtosProject2;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * CLASS Gui
@@ -23,18 +24,18 @@ public class Gui {
      */
     public static void main(String[] args) throws IOException, InterruptedException {
         Console console = new Console();
-        Display display = ConfigureDisplay();
+        Display display = ConfigureDisplay(true, 2);
 
         DoubleBuffer<Message> bufferAB = new DoubleBuffer<>(1);
         DoubleBuffer<Message> bufferCD = new DoubleBuffer<>(1);
 
         //TO SINGLE STEP, SET delayMs TO 0.
-        int delayMs = 5;
+        int delayMs = 50;
         //delayMs = 0; //set to 0 to single step
 
         //ProcessC takes the data from bufferCD as it is available
         //and determines if a collision occurred
-        ProcessC processC = new ProcessC("ProcessC", delayMs, bufferCD, display, console);
+        ProcessC processC = new ProcessC("ProcessC", bufferCD, display, console);
         processC.start();
 
         //ProcessB takes the data from bufferAB as it is available
@@ -63,12 +64,13 @@ public class Gui {
      * @return
      * @throws IOException
      */
-    private static Display ConfigureDisplay() throws IOException {
+    private static Display ConfigureDisplay(boolean useRandomPosAndDir, int velocityZ) throws IOException {
         Display display = new Display(2);
-        display.AddPlane("Plane for X", Plane.Movement.X, "X", 0, 0, false);
-        display.AddPlane("Plane for Y", Plane.Movement.Y, "Y", 0, 2, false);
-        display.AddPlane("Plane for Z", Plane.Movement.Z, "Z",3,6,false);
-        display.AddPlane("Process C output for X, Y, Z", Plane.Movement.Set, "",-1,-1,true);
+        List<Mover> movers = Mover.getMovers(useRandomPosAndDir, velocityZ);
+        display.AddPlane("Plane for X", "X", movers.get(0));
+        display.AddPlane("Plane for Y", "Y", movers.get(1));
+        display.AddPlane("Plane for Z", "Z", movers.get(2));
+        display.AddPlane("Process C output for X, Y, Z", "",null);
         display.Refresh(1000);
 
         return display;

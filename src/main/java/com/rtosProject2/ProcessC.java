@@ -15,7 +15,6 @@ import java.io.IOException;
 public class ProcessC extends ProcessBase {
 
     private final DoubleBuffer<Message> _bufferCD;
-    private final int _delayMs;
     private Plane _statusPlane;
     private Display _display;
     private int _second = 2;
@@ -27,18 +26,15 @@ public class ProcessC extends ProcessBase {
      * Constructor that accepts the the bufferCD summary data
      *
      * @param name
-     * @param delayMs
      * @param bufferCD
      * @param display
      * @param console
      */
     public ProcessC(String name,
-                    int delayMs,
                     DoubleBuffer<Message> bufferCD,
                     Display display,
                     Console console) {
         super(name, console);
-        _delayMs = delayMs;
         _bufferCD = bufferCD;
         _display = display;
         _statusPlane = display.GetStatusPlane();
@@ -63,7 +59,6 @@ public class ProcessC extends ProcessBase {
             ConsoleWriteLine("SECOND " + _second);
             OutputState(positions);
             ShowState(positions);
-
             SendTestMessageToA(_second);
 
             _second++;
@@ -126,16 +121,9 @@ public class ProcessC extends ProcessBase {
             boolean collision = currentMarker.length() > 1;
             _statusPlane.ShowMarker(row, col, collision, currentMarker);
 
-            //if collision occurred, play a sound and note the collision time/position/trains
+            //if collision occurred, note the collision time/position/trains
             //in the log as directed by the assignment.
             if (collision) {
-                try {
-                    //sound class not written by team
-                    //pulled from from https://stackoverflow.com/a/6700039
-                    SoundUtils.tone(400, 50, 0.2);
-                } catch (LineUnavailableException e) {
-                    e.printStackTrace();
-                }
 
                 _display.UpdateStatus(", COLLISION " + currentMarker, true);
                 ConsoleWriteLine("**** COLLISION between " + currentMarker.substring(0, 1) + " and " +
