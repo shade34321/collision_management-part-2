@@ -3,7 +3,6 @@ package com.rtosProject2;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.Label;
 
-
 /**
  * CLASS Plane
  * - Handles movement and display of each train.
@@ -104,6 +103,7 @@ public class Plane {
         }
     }
 
+
     /**
      * Handles moving the train one position in the plane using logic
      * described in the homework assignment. X = diagonal, Y is veritcal, Z is horizontal
@@ -113,7 +113,7 @@ public class Plane {
 
         switch (_mover.getMovement()) {
             case X:
-                if(haltX){
+                if(haltX ){
                     System.out.println("halt x");
                     ShowMarker(_atRow, _atCol, false);
 

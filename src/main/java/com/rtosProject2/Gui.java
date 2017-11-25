@@ -26,12 +26,19 @@ public class Gui {
         Console console = new Console();
         Display display = ConfigureDisplay(true, 2);
 
+        for(Plane p :display.GetPlanes()){
+            Mover m = p.GetMoverClone();
+            String message = "Plane " + p.GetMarker() + " has a starting position of (" + m.getRowPos() + "," + m.getColPos() + ")\n";
+            message +=   "Moving in a " + m.getDirection().toString() + " direction with a velocity of " + m.getVelocity();
+            console.WriteLine(message);
+        }
+
         DoubleBuffer<Message> bufferAB = new DoubleBuffer<>(1);
         DoubleBuffer<Message> bufferCD = new DoubleBuffer<>(1);
 
         //TO SINGLE STEP, SET delayMs TO 0.
         int delayMs = 50;
-        //delayMs = 0; //set to 0 to single step
+        delayMs = 0; //set to 0 to single step
 
         //ProcessC takes the data from bufferCD as it is available
         //and determines if a collision occurred

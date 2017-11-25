@@ -19,15 +19,60 @@ public class Mover {
     private static Random _random = new Random();
 
     public enum Direction {
-        NotSet,
-        N,
-        NE,
-        E,
-        SE,
-        S,
-        SW,
-        W,
-        NW
+        NotSet {
+            @Override
+            public String toString() {
+                return "Not Set";
+            }
+        },
+        N {
+            @Override
+            public String toString() {
+                return "North";
+            }
+        },
+        NE {
+            @Override
+            public String toString() {
+                return "North East";
+            }
+        },
+        E {
+            @Override
+            public String toString() {
+                return "East";
+            }
+        },
+        SE {
+            @Override
+            public String toString() {
+                return "South East";
+            }
+        },
+        S {
+            @Override
+            public String toString() {
+                return "South";
+            }
+        },
+        SW {
+            @Override
+            public String toString() {
+                return "South West";
+            }
+        },
+        W {
+            @Override
+            public String toString() {
+                return "West";
+            }
+        },
+        NW {
+            @Override
+            public String toString() {
+                return "North West";
+            }
+        }
     }
 
     private Mover(Plane.Movement movement, int velocity, int moveRow, int moveCol, int startRow, int startCol) {
@@ -123,6 +168,12 @@ public class Mover {
         return new Mover(Plane.Movement.Z, velocity, moveRow, moveCol, startRow, startCol);
     }
 
+    public static void printPosAndVel(Mover a, String plane) {
+        System.out.printf("Plane %s\n", plane);
+        System.out.printf("Starting Position: (%d, %d)\n", a._currentRowPos, a._currentColPos);
+        System.out.printf("Moving in a %s direction at a velocity of %d\n", a._direction.toString(), a._velocity);
+    }
+
     /**
      * Gets a list of movers in order X, Y, Z, with unique positions (even when random)
      * @param useRandomPosAndDir
@@ -142,6 +193,10 @@ public class Mover {
                        y._currentColPos != z._currentColPos && y._currentRowPos != z._currentRowPos;
 
         }
+
+        printPosAndVel(x, "X");
+        printPosAndVel(y, "Y");
+        printPosAndVel(z, "Z");
         return new ArrayList<>(Arrays.asList(x, y, z));
     }
 

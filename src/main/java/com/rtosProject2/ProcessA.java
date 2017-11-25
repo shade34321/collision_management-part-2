@@ -1,6 +1,9 @@
 package com.rtosProject2;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,6 +23,7 @@ public class ProcessA extends ProcessBase {
     private final int maxConsecutiveHalts = 2;
     private int consecutiveHalts = 0;
     private Plane.Movement lastHalted = Plane.Movement.NotSet;
+    private static Random _random = new Random();
 
     /**
      * Constructor that accepts the motion delay (0 for single step mode),
@@ -120,6 +124,15 @@ public class ProcessA extends ProcessBase {
         return false;
     }
 
+
+    /**
+     * Returns a number between 1 and 100
+     * @return
+     */
+    private int getRandom() {
+        return _random.nextInt(100 + 1) + 1;
+    }
+
     /**
      * This process uses the Collision Management class to create sub threads of the process
      * High level the algorithm will take a base line of all the trains moving
@@ -163,36 +176,60 @@ public class ProcessA extends ProcessBase {
 
             // Else:  calculate which one to use
             else {
-                final int halt_x = future_halt_x.get();
-                final int halt_y = future_halt_y.get();
-                final int halt_z = future_halt_z.get();
+                ArrayList<tuple> halt = new ArrayList<>();
+                halt.add(new tuple(future_halt_x.get(), "X"));
+                halt.add(new tuple(future_halt_y.get(), "Y"));
+                halt.add(new tuple(future_halt_z.get(), "Z"));
+                int multipleFailures = 0;
+                Collections.sort(halt);
+                Collections.reverse(halt);
 
+                /**
                 if (halt_x > collision && halt_x >= halt_y && halt_x >= halt_z) {
-                    if (lastHalted == Plane.Movement.X) {
-                        consecutiveHalts++;
+                    if (getRandom() > 10) {
+                        if (lastHalted == Plane.Movement.X) {
+                            consecutiveHalts++;
+                        } else {
+                            consecutiveHalts = 0;
+                            lastHalted = Plane.Movement.X;
+                        }
+                        Plane.haltX = consecutiveHalts < maxConsecutiveHalts;
                     } else {
-                        consecutiveHalts = 0;
-                        lastHalted = Plane.Movement.X;
+                        ConsoleWriteLine("Plane X failed to stop.");
+                        multipleFailures += 1;
                     }
-                    Plane.haltX = consecutiveHalts < maxConsecutiveHalts;
                 }
                 if (halt_y > collision && halt_y > halt_x && halt_y >= halt_z) {
-                    if (lastHalted == Plane.Movement.Y) {
-                        consecutiveHalts++;
+                    if (getRandom() > 5) {
+                        if (lastHalted == Plane.Movement.Y) {
+                            consecutiveHalts++;
+                        } else {
+                            consecutiveHalts = 0;
+                            lastHalted = Plane.Movement.Y;
+                        }
+                        Plane.haltY = consecutiveHalts < maxConsecutiveHalts;
                     } else {
-                        consecutiveHalts = 0;
-                        lastHalted = Plane.Movement.Y;
+                        ConsoleWriteLine("Plane Y failed to stop.");
+                        multipleFailures += 1;
                     }
-                    Plane.haltY = consecutiveHalts < maxConsecutiveHalts;;
                 }
                if (halt_z > collision && halt_z > halt_x && halt_z > halt_y) {
-                    if (lastHalted == Plane.Movement.Z) {
-                        consecutiveHalts++;
+                    if (getRandom() > 1) {
+                        if (lastHalted == Plane.Movement.Z) {
+                            consecutiveHalts++;
+                        } else {
+                            consecutiveHalts = 0;
+                            lastHalted = Plane.Movement.Z;
+                        }
+                        Plane.haltZ = consecutiveHalts < maxConsecutiveHalts;
                     } else {
-                        consecutiveHalts = 0;
-                        lastHalted = Plane.Movement.Z;
+                        ConsoleWriteLine("Plane Z failed to stop.");
+                        multipleFailures += 1;
                     }
-                    Plane.haltZ = consecutiveHalts < maxConsecutiveHalts;
+                }
+                 */
+                if (multipleFailures > 1){
+                    ConsoleWriteLine("Multiple failures occurred. Unavoidable collision detected.");
                 }
             }
             if (consecutiveHalts >= maxConsecutiveHalts) {
