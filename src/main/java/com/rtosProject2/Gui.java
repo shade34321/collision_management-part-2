@@ -38,7 +38,7 @@ public class Gui {
 
         //TO SINGLE STEP, SET delayMs TO 0.
         int delayMs = 50;
-        delayMs = 0; //set to 0 to single step
+        //delayMs = 0; //set to 0 to single step
 
         //ProcessC takes the data from bufferCD as it is available
         //and determines if a collision occurred

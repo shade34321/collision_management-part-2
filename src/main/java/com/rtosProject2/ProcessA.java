@@ -172,10 +172,7 @@ public class ProcessA extends ProcessBase {
                 future_halt_x.cancel(true);
                 future_halt_y.cancel(true);
                 future_halt_z.cancel(true);
-            }
-
-            // Else:  calculate which one to use
-            else {
+            } else {             // Else:  calculate which one to use
                 ArrayList<tuple> halt = new ArrayList<>();
                 halt.add(new tuple(future_halt_x.get(), "X"));
                 halt.add(new tuple(future_halt_y.get(), "Y"));
@@ -184,10 +181,16 @@ public class ProcessA extends ProcessBase {
                 Collections.sort(halt);
                 Collections.reverse(halt);
 
+                /**
+                 * We put every plane's marker and the future value inside an Arraylist of tuples. Then we sort the Arraylist in descending order.
+                 * From there we loop through every tuple inside the Arraylist and try and stop the highest weight. If this fails then we need to stop the second highest weight. If that fails then
+                 * we have an unavoidable collision.
+                 */
                 for(tuple t : halt) {
-                    boolean b = false;
+                    String msg = "Sending stop signal to train " + t.getPlane();
+                    ConsoleWriteLine(msg);
                     if (t.getPlane().equals("X")) {
-                        if (getRandom() > 10) {
+                        if (getRandom() > 10) { // Checks for the failure
                             if (lastHalted == Plane.Movement.X) {
                                 consecutiveHalts++;
                             } else {
@@ -195,13 +198,12 @@ public class ProcessA extends ProcessBase {
                                 lastHalted = Plane.Movement.X;
                             }
                             Plane.haltX = consecutiveHalts < maxConsecutiveHalts;
-                            b = true;
                         } else {
                             ConsoleWriteLine("Plane X failed to stop.");
                             multipleFailures += 1;
                         }
                     }else if (t.getPlane().equals("Y")) {
-                        if (getRandom() > 5) {
+                        if (getRandom() > 5) {  // Checks for the failure
                             if (lastHalted == Plane.Movement.Y) {
                                 consecutiveHalts++;
                             } else {
@@ -209,13 +211,12 @@ public class ProcessA extends ProcessBase {
                                 lastHalted = Plane.Movement.Y;
                             }
                             Plane.haltY = consecutiveHalts < maxConsecutiveHalts;
-                            b = true;
                         } else {
                             ConsoleWriteLine("Plane Y failed to stop.");
                             multipleFailures += 1;
                         }
                     } else if (t.getPlane().equals("Z")) {
-                        if (getRandom() > 1) {
+                        if (getRandom() > 1) {  // Checks for the failure
                             if (lastHalted == Plane.Movement.Z) {
                                 consecutiveHalts++;
                             } else {
@@ -223,17 +224,16 @@ public class ProcessA extends ProcessBase {
                                 lastHalted = Plane.Movement.Z;
                             }
                             Plane.haltZ = consecutiveHalts < maxConsecutiveHalts;
-                            b = true;
                         } else {
                             ConsoleWriteLine("Plane Z failed to stop.");
                             multipleFailures += 1;
                         }
                     }
-                    if (b) { break;}
+                    if (Plane.haltX || Plane.haltY || Plane.haltZ) { break;} // We've already stopped one plane so we can exit.
                 }
 
                 if (multipleFailures > 1){
-                    ConsoleWriteLine("Multiple failures occurred. Unavoidable collision detected.");
+                    ConsoleWriteLine("Multiple failures occurred. Unavoidable collision could possibly happen.");
                 }
             }
             if (consecutiveHalts >= maxConsecutiveHalts) {
