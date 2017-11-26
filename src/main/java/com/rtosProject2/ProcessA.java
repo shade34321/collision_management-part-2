@@ -184,50 +184,54 @@ public class ProcessA extends ProcessBase {
                 Collections.sort(halt);
                 Collections.reverse(halt);
 
-                /**
-                if (halt_x > collision && halt_x >= halt_y && halt_x >= halt_z) {
-                    if (getRandom() > 10) {
-                        if (lastHalted == Plane.Movement.X) {
-                            consecutiveHalts++;
+                for(tuple t : halt) {
+                    boolean b = false;
+                    if (t.getPlane().equals("X")) {
+                        if (getRandom() > 10) {
+                            if (lastHalted == Plane.Movement.X) {
+                                consecutiveHalts++;
+                            } else {
+                                consecutiveHalts = 0;
+                                lastHalted = Plane.Movement.X;
+                            }
+                            Plane.haltX = consecutiveHalts < maxConsecutiveHalts;
+                            b = true;
                         } else {
-                            consecutiveHalts = 0;
-                            lastHalted = Plane.Movement.X;
+                            ConsoleWriteLine("Plane X failed to stop.");
+                            multipleFailures += 1;
                         }
-                        Plane.haltX = consecutiveHalts < maxConsecutiveHalts;
-                    } else {
-                        ConsoleWriteLine("Plane X failed to stop.");
-                        multipleFailures += 1;
-                    }
-                }
-                if (halt_y > collision && halt_y > halt_x && halt_y >= halt_z) {
-                    if (getRandom() > 5) {
-                        if (lastHalted == Plane.Movement.Y) {
-                            consecutiveHalts++;
+                    }else if (t.getPlane().equals("Y")) {
+                        if (getRandom() > 5) {
+                            if (lastHalted == Plane.Movement.Y) {
+                                consecutiveHalts++;
+                            } else {
+                                consecutiveHalts = 0;
+                                lastHalted = Plane.Movement.Y;
+                            }
+                            Plane.haltY = consecutiveHalts < maxConsecutiveHalts;
+                            b = true;
                         } else {
-                            consecutiveHalts = 0;
-                            lastHalted = Plane.Movement.Y;
+                            ConsoleWriteLine("Plane Y failed to stop.");
+                            multipleFailures += 1;
                         }
-                        Plane.haltY = consecutiveHalts < maxConsecutiveHalts;
-                    } else {
-                        ConsoleWriteLine("Plane Y failed to stop.");
-                        multipleFailures += 1;
-                    }
-                }
-               if (halt_z > collision && halt_z > halt_x && halt_z > halt_y) {
-                    if (getRandom() > 1) {
-                        if (lastHalted == Plane.Movement.Z) {
-                            consecutiveHalts++;
+                    } else if (t.getPlane().equals("Z")) {
+                        if (getRandom() > 1) {
+                            if (lastHalted == Plane.Movement.Z) {
+                                consecutiveHalts++;
+                            } else {
+                                consecutiveHalts = 0;
+                                lastHalted = Plane.Movement.Z;
+                            }
+                            Plane.haltZ = consecutiveHalts < maxConsecutiveHalts;
+                            b = true;
                         } else {
-                            consecutiveHalts = 0;
-                            lastHalted = Plane.Movement.Z;
+                            ConsoleWriteLine("Plane Z failed to stop.");
+                            multipleFailures += 1;
                         }
-                        Plane.haltZ = consecutiveHalts < maxConsecutiveHalts;
-                    } else {
-                        ConsoleWriteLine("Plane Z failed to stop.");
-                        multipleFailures += 1;
                     }
+                    if (b) { break;}
                 }
-                 */
+
                 if (multipleFailures > 1){
                     ConsoleWriteLine("Multiple failures occurred. Unavoidable collision detected.");
                 }
