@@ -22,6 +22,9 @@ public class Plane {
     public static boolean haltX = false;
     public static boolean haltY = false;
     public static boolean haltZ = false;
+    public static boolean failedX = false;
+    public static boolean failedY = false;
+    public static boolean failedZ = false;
 
     /**
      * Enum used to tell the plane which movement operation to perform. For example,

@@ -190,7 +190,7 @@ public class ProcessA extends ProcessBase {
                     String msg = "Sending stop signal to train " + t.getPlane();
                     ConsoleWriteLine(msg);
                     if (t.getPlane().equals("X")) {
-                        if (getRandom() > 10) { // Checks for the failure
+                        if (getRandom() > 10 && !Plane.failedX) { // Checks for the failure
                             if (lastHalted == Plane.Movement.X) {
                                 consecutiveHalts++;
                             } else {
@@ -201,9 +201,10 @@ public class ProcessA extends ProcessBase {
                         } else {
                             ConsoleWriteLine("Plane X failed to stop.");
                             multipleFailures += 1;
+                            Plane.failedX = true;
                         }
                     }else if (t.getPlane().equals("Y")) {
-                        if (getRandom() > 5) {  // Checks for the failure
+                        if (getRandom() > 5 && !Plane.failedY) {  // Checks for the failure
                             if (lastHalted == Plane.Movement.Y) {
                                 consecutiveHalts++;
                             } else {
@@ -214,9 +215,10 @@ public class ProcessA extends ProcessBase {
                         } else {
                             ConsoleWriteLine("Plane Y failed to stop.");
                             multipleFailures += 1;
+                            Plane.failedY = true;
                         }
                     } else if (t.getPlane().equals("Z")) {
-                        if (getRandom() > 1) {  // Checks for the failure
+                        if (getRandom() > 1 && !Plane.failedZ) {  // Checks for the failure
                             if (lastHalted == Plane.Movement.Z) {
                                 consecutiveHalts++;
                             } else {
@@ -227,6 +229,7 @@ public class ProcessA extends ProcessBase {
                         } else {
                             ConsoleWriteLine("Plane Z failed to stop.");
                             multipleFailures += 1;
+                            Plane.failedZ = true;
                         }
                     }
                     if (Plane.haltX || Plane.haltY || Plane.haltZ) { break;} // We've already stopped one plane so we can exit.
