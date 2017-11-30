@@ -2,13 +2,11 @@ package com.rtosProject2;
 
 public class Position {
     private final String _train;
-    private final int _row;
-    private final int _col;
+    private final Mover _mover;
 
-    public Position(String train, int row, int col) {
+    public Position(String train, Mover mover) {
         _train = train;
-        _row = row;
-        _col = col;
+        _mover = mover;
     }
 
     public String train() {
@@ -16,10 +14,12 @@ public class Position {
     }
 
     public int row() {
-        return _row;
+        return _mover.getRowPos();
     }
 
     public int col() {
-        return _col;
+        return _mover.getColPos();
     }
+
+    public Mover mover() { return _mover; }
 }

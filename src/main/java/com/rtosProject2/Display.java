@@ -139,29 +139,13 @@ public class Display {
     }
 
     /**
-     * Getter to return the current state of all planes in a 3D matrix.
-     * @return
-     */
-    public String[][][] GetCurrentState() {
-        String[][][] currentState = new String[3][Plane.rows][Plane.cols];
-
-        for (int i = 0; i < _planes.size(); i++) {
-            currentState[i] = GetPlanes().get(i).GetState();
-        }
-        return currentState;
-    }
-
-    /**
      * Adds a display plane with coordinates to the overall grid. Used during initialization.
      * @param title
-     * @param movement
      * @param marker
-     * @param initX
-     * @param initY
-     * @param isStatusPlane
+     * @param mover
      * @return
      */
-    public Plane AddPlane(String title, Plane.Movement movement, String marker, int initX, int initY, boolean isStatusPlane) {
+    public Plane AddPlane(String title, String marker, Mover mover) {
         // Create panel to hold components
         Panel panel = new Panel();
         panel.setLayoutManager(new GridLayout(8));
@@ -187,9 +171,13 @@ public class Display {
         }
         panel.setSize(new TerminalSize(8,9));
         _planePanel.addComponent(panel.withBorder(Borders.singleLine(title)));
-        Plane newPlane =  new Plane(marker, movement, labels);
-        if (initX > -1 && initX > -1) newPlane.Initialize(initX, initY);
-        if (!isStatusPlane) { _planes.add(newPlane); } else { _statusPlane = newPlane; }
+        Plane newPlane =  new Plane(marker, mover, labels);
+        if (mover != null) {
+            newPlane.Initialize();
+            _planes.add(newPlane);
+        } else {
+            _statusPlane = newPlane;
+        }
         return newPlane;
     }
 }
