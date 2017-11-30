@@ -37,7 +37,7 @@ public class Gui {
         DoubleBuffer<Message> bufferCD = new DoubleBuffer<>(1);
 
         //TO SINGLE STEP, SET delayMs TO 0.
-        int delayMs = 50;
+        int delayMs = 1000;
         //delayMs = 0; //set to 0 to single step
 
         //ProcessC takes the data from bufferCD as it is available

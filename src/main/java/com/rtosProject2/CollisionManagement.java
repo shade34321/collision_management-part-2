@@ -14,12 +14,10 @@ public class CollisionManagement implements Callable<Integer> {
     private Object[][] state;
     private Plane.Movement movement;
     private int look_ahead;
-
     private final int stateTrain = 0;
     private final int stateRow = 1;
     private final int stateCol = 2;
     private final int stateMover = 3;
-
 
     // Constructor
     public CollisionManagement(Positions positions, Plane.Movement movement, int look_ahead) {

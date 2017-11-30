@@ -124,7 +124,6 @@ public class ProcessA extends ProcessBase {
         return false;
     }
 
-
     /**
      * Returns a number between 1 and 100
      * @return
@@ -133,7 +132,7 @@ public class ProcessA extends ProcessBase {
         return _random.nextInt(100 + 1) + 1;
     }
 
-    /**
+  /**
      * This process uses the Collision Management class to create sub threads of the process
      * High level the algorithm will take a base line of all the trains moving
      * If their is no collision, then nothing to do, the other threads are cancelled.
@@ -150,7 +149,6 @@ public class ProcessA extends ProcessBase {
     private void preventCollision(Positions positions) {
 
         try {
-
             // How far we want to look ahead
             int look_ahead = Plane.rows;
 
@@ -233,6 +231,7 @@ public class ProcessA extends ProcessBase {
                         }
                     }
                     if (Plane.haltX || Plane.haltY || Plane.haltZ) { break;} // We've already stopped one plane so we can exit.
+
                 }
 
                 if (multipleFailures > 1){
